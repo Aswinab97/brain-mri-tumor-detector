@@ -338,7 +338,5 @@ Then open the notebook from the browser UI.
 
 ## License
 
-_Add your chosen license here (e.g., MIT, Apache 2.0)._
-
-You can generate a license on GitHub via  
-“Add file → Create new file → LICENSE” and pick a template.
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
