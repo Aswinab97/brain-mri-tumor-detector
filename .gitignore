@@ -1,0 +1,29 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Data and models (large files)
+data_raw/
+data_processed/
+models/*.pth
+models/*.pt
+
+# Logs
+*.log
+logs/
