@@ -1,71 +1,179 @@
 # Brain MRI Tumor Detector
 
-Brain MRI Analyzer – a Dockerized Python web app that uses a deep learning model to detect brain tumors from MRI images. Users upload a brain MRI scan through a simple web interface, and the app classifies it as **tumor** or **no tumor**. The application is containerized with Docker and can be deployed to Azure App Service (Linux) via Azure Container Registry.
+A deep learning–powered web application for detecting brain tumors from MRI images. Users upload an MRI scan through a web interface, and the model predicts whether a **tumor** is present or not.
+
+The application is containerized with Docker and deployed to **Azure App Service (Linux)** using an image stored in **Azure Container Registry (ACR)**.
 
 ---
 
-## Demo
+## Author
 
-Below is a screenshot of the web interface used to upload MRI images and view predictions:
+**Aswin Anil Bindu**  
+Applied AI Solutions – George Brown College  
+GitHub: [Aswinab97](https://github.com/Aswinab97)
+
+---
+
+## Live Web App
+
+The Brain MRI Tumor Detector is deployed and accessible at:
+
+- **URL:** https://brain-mri-analyzer-frf7ezcrc4bbafcp.eastus-01.azurewebsites.net
+
+> The first request may take a few seconds while the container starts (cold start).
+
+---
+
+## Web App Interface (Screenshot)
+
+Screenshot of the web interface used to upload MRI images and view predictions:
 
 ![Brain MRI tumor detector UI](images/app-screenshot.png)
 
 ---
 
-## Features
+## Project Overview
 
-- Upload brain MRI images through a simple web UI.
-- Deep learning–based classification (**tumor** vs **no tumor**).
-- Pretrained PyTorch models:
+This is an end-to-end computer vision project that includes:
+
+### 1. Data Preparation
+
+- Organizing MRI images into tumor / non‑tumor classes.  
+- Basic preprocessing (resize, normalization) for model input.  
+
+### 2. Model Development
+
+- Training and evaluation of deep learning models for binary classification:
   - `resnet18_brain_mri_mps.pth`
   - `simple_cnn_baseline_mps.pth`
-- JSON reports with evaluation metrics for models.
-- Dockerized for reproducible deployment.
-- Ready to run on **Azure App Service (Linux)** using an image from **Azure Container Registry (ACR)**.
+- Metrics stored as JSON in the `reports/` directory.  
+
+### 3. Inference API
+
+- **FastAPI** application that:
+  - Accepts uploaded MRI images.
+  - Runs inference using the selected model.
+  - Returns a prediction: **tumor** / **no tumor**.
+
+### 4. Dockerization & Deployment
+
+- Docker image defined via `Dockerfile`.  
+- Deployed on **Azure App Service (Linux)**.  
+- Container image hosted in **Azure Container Registry (ACR)**.  
+
+---
+
+## Data
+
+This project uses a brain MRI dataset with labeled images indicating presence or absence of tumor.
+
+- **Classes:**
+  - `yes` → MRI scan with tumor.  
+  - `no` → MRI scan without tumor.  
+
+- **Local folder structure (not all committed to git):**
+
+```text
+data_raw/
+├── yes/       # Tumor present
+└── no/        # Tumor absent
+```
+
+Raw data and some large assets are not pushed to GitHub (see `.gitignore`).
+
+---
+
+## Model Overview
+
+Two main PyTorch models are used:
+
+- **ResNet18-based model**
+  - Pretrained backbone, fine-tuned on brain MRI images.
+  - Checkpoint: `models/resnet18_brain_mri_mps.pth`.
+
+- **Simple CNN baseline**
+  - Custom small CNN used for comparison.
+  - Checkpoint: `models/simple_cnn_baseline_mps.pth`.
+
+Evaluation results (accuracy, confusion matrix, etc.) are stored as JSON files in:
+
+```text
+reports/
+├── resnet18_results.json
+└── simple_cnn_results.json
+```
+
+---
+
+## Inference Flow
+
+1. **Upload**
+   - User uploads a brain MRI image via the web UI or API.
+
+2. **Preprocessing**
+   - Image is resized and normalized to match training preprocessing.
+   - Converted into a PyTorch tensor batch and moved to CPU / MPS.
+
+3. **Prediction**
+   - Model weights are loaded from `models/*.pth`.
+   - A forward pass generates class probabilities.
+
+4. **Output**
+   - Highest probability class is mapped to:
+     - `tumor`
+     - `no tumor`
+   - Result is displayed on the UI and can also be returned as JSON.
+
+Core code:
+
+- Inference utilities: `src/inference.py`.  
+- API routes & web app: `src/api.py` (FastAPI).  
+
+---
+
+## Tech Stack
+
+- **Language:** Python  
+- **Deep Learning:** PyTorch  
+- **Web Framework:** FastAPI (served with Uvicorn / Gunicorn)  
+- **Containerization:** Docker  
+- **Cloud:** Azure App Service (Linux), Azure Container Registry  
+- **OS:** macOS / Linux compatible  
 
 ---
 
 ## Project Structure
 
 ```text
-.
-├── data_raw/                 # Raw MRI images (ignored in git)
+brain-mri-tumor-detector/
+│
+├── data_raw/                   # Raw MRI images (ignored in git)
 │   ├── no/
 │   └── yes/
-├── data_processed/           # Processed / prepared data (ignored in git)
+├── data_processed/             # Processed data (ignored in git)
 ├── models/
 │   ├── resnet18_brain_mri_mps.pth
 │   └── simple_cnn_baseline_mps.pth
 ├── notebooks/
-│   └── 00_explore_data.ipynb
+│   └── 00_explore_data.ipynb   # Data exploration / experiments
 ├── reports/
 │   ├── resnet18_results.json
 │   └── simple_cnn_results.json
 ├── src/
 │   ├── __init__.py
-│   ├── api.py                # Web API / app entry point
-│   └── inference.py          # Model loading & prediction utilities
+│   ├── api.py                  # FastAPI app (web/API entry point)
+│   └── inference.py            # Model loading & prediction logic
 ├── images/
-│   └── app-screenshot.png    # Screenshot of the web app UI
-├── Dockerfile                # Docker image definition
-├── startup.sh                # Startup script (for Azure App Service)
-├── requirements.txt          # Python dependencies
+│   └── app-screenshot.png      # Web UI screenshot
+├── Dockerfile                  # Docker image definition
+├── startup.sh                  # Startup script for Azure App Service
+├── requirements.txt            # Python dependencies
 └── README.md
 ```
 
 ---
 
-## Requirements
-
-- Python 3.9+ (or compatible with your dependencies)
-- Docker (for containerized runs)
-- Optional: Azure CLI / Azure portal access (for cloud deployment)
-
-Python dependencies are listed in `requirements.txt`.
-
----
-
-## Setup & Local Development
+## Local Setup and Usage
 
 ### 1. Clone the repository
 
@@ -74,7 +182,7 @@ git clone git@github.com:Aswinab97/brain-mri-tumor-detector.git
 cd brain-mri-tumor-detector
 ```
 
-(or use the HTTPS URL if you’re not using SSH.)
+(Or use HTTPS: `https://github.com/Aswinab97/brain-mri-tumor-detector.git`.)
 
 ### 2. Create and activate a virtual environment
 
@@ -89,49 +197,28 @@ source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Run the API locally
-
-This assumes `src/api.py` exposes a FastAPI or similar app named `app`:
+### 4. Run the FastAPI app locally
 
 ```bash
 uvicorn src.api:app --host 0.0.0.0 --port 8000
 ```
 
-Then open in your browser:
+Then open:
 
-- App UI: `http://localhost:8000`
-- API docs (if FastAPI): `http://localhost:8000/docs`
-
-> If your app entry point is different (e.g., Flask), adjust the command accordingly.
-
----
-
-## Inference Logic
-
-The main inference utilities live in `src/inference.py`. At a high level:
-
-1. **Load model weights** from `models/*.pth`.
-2. **Preprocess** incoming MRI images to the expected size/normalization.
-3. **Run the model** to get logits/probabilities.
-4. **Map predictions** to labels (`tumor`, `no tumor`) and return them to the API.
-
-The API layer in `src/api.py`:
-
-- Exposes an endpoint that receives image uploads.
-- Calls the inference functions to get predictions.
-- Returns a JSON response and/or renders an HTML page with the result.
+- Web UI: `http://localhost:8000`  
+- API docs (Swagger UI): `http://localhost:8000/docs`  
 
 ---
 
 ## Docker Usage
 
-### 1. Build the Docker image (local)
+### Build the Docker image (local)
 
 ```bash
 docker build -t brain-mri-app:latest .
 ```
 
-If you specifically need a Linux/amd64 image (for Azure App Service):
+For Azure (Linux/amd64):
 
 ```bash
 docker buildx build \
@@ -140,83 +227,96 @@ docker buildx build \
   .
 ```
 
-### 2. Run the container locally
+### Run the container
 
 ```bash
 docker run -p 8000:8000 brain-mri-app:latest
 ```
 
-Now the app should be available at:
-
-- `http://localhost:8000`
+Access the app at: `http://localhost:8000`.
 
 ---
 
-## Azure Deployment (High-Level Overview)
+## Azure Deployment (High-Level)
 
-1. **Build & tag image for Azure Container Registry (ACR)**
+The app is deployed as a Docker container to **Azure App Service (Linux)** using **Azure Container Registry (ACR)**.
 
-   ```bash
-   # Example values – update with your real registry / image names
-   ACR_NAME=brainmriregaswin
-   IMAGE_NAME=brain-mri-app
-   TAG=amd64
+### 1. Build and push the image to ACR
 
-   az acr login --name $ACR_NAME
+```bash
+# Example values – update for your environment
+ACR_NAME=brainmriregaswin
+IMAGE_NAME=brain-mri-app
+TAG=amd64
 
-   docker buildx build \
-     --platform linux/amd64 \
-     -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$TAG \
-     .
+az acr login --name $ACR_NAME
 
-   docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$TAG
-   ```
+docker buildx build \
+  --platform linux/amd64 \
+  -t $ACR_NAME.azurecr.io/$IMAGE_NAME:$TAG \
+  .
 
-2. **Create Azure Web App for Containers**
+docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:$TAG
+```
 
-   - Runtime stack: Linux
-   - Container source: Azure Container Registry
-   - Image: `$ACR_NAME.azurecr.io/$IMAGE_NAME`
-   - Tag: `$TAG`
-   - Port: `8000` (or your app port)
+### 2. Configure Azure Web App for Containers
 
-3. **Configure startup command (if needed)**
+In Azure Portal:
 
-   In the Web App configuration, set the startup command (if Azure doesn’t infer it):
+- Create a **Web App** (Linux).  
+- Publish: **Docker Container**.  
+- Image source: **Azure Container Registry**.  
+- Use:
+  - Registry: `$ACR_NAME`  
+  - Image: `$IMAGE_NAME`  
+  - Tag: `$TAG`  
+- Set container port to `8000`.  
 
-   ```bash
-   ./startup.sh
-   ```
+### 3. Startup command (if needed)
 
-   or directly:
+In **Configuration → General settings** or **Container settings**, you can set:
 
-   ```bash
-   gunicorn -k uvicorn.workers.UvicornWorker -w 1 -b 0.0.0.0:8000 src.api:app
-   ```
+```bash
+./startup.sh
+```
 
-4. **Browse the deployed app**
+or directly:
 
-   - `https://<your-app-name>.azurewebsites.net`
+```bash
+gunicorn -k uvicorn.workers.UvicornWorker -w 1 -b 0.0.0.0:8000 src.api:app
+```
 
 ---
 
-## Data & Model Files
+## Use Case
 
-Large data and model files are **not** committed to the repository by default (see `.gitignore`). To reproduce training or inference end‑to‑end:
+This project demonstrates how deep learning can support **medical image analysis**:
 
-- Place raw MRI images under `data_raw/no` and `data_raw/yes`.
-- Place trained model weights under `models/`.
+- Early indication of tumor presence from MRI scans.  
+- Decision support for radiologists and clinicians.  
+- Educational / research example of an end‑to‑end medical imaging pipeline.  
 
-If you want fully reproducible experiments, consider:
+> **Disclaimer:** This model is not a medical diagnostic tool and must not be used for real clinical decisions without proper validation and regulatory approval.
 
-- Using DVC or similar tools to track datasets.
-- Publishing model weights in a release or external storage (e.g. Azure Blob Storage).
+---
+
+## Limitations
+
+- Dataset size and diversity may be limited compared to real hospital data.  
+- Trained on a specific dataset; performance may not generalize without retraining.  
+- No extensive hyperparameter tuning or cross‑validation pipeline yet.  
 
 ---
 
 ## Notebooks
 
-The `notebooks/00_explore_data.ipynb` notebook contains initial data exploration and possibly some training experiments. To run it:
+Exploratory analysis and experimentation are available in:
+
+```text
+notebooks/00_explore_data.ipynb
+```
+
+Run:
 
 ```bash
 jupyter notebook
@@ -228,15 +328,17 @@ Then open the notebook from the browser UI.
 
 ## Future Improvements
 
-- Add unit tests for inference and API endpoints.
-- Integrate GitHub Actions for automatic testing and image builds.
-- Add Grad‑CAM or other explainability visualizations.
-- Extend classification to multiple tumor types.
+- Hyperparameter tuning for improved accuracy.  
+- Grad‑CAM or attention maps for tumor region visualization.  
+- Support for multiple tumor types or segmentation.  
+- Unit tests and CI (GitHub Actions).  
+- Enhanced logging, monitoring, and error handling in production.  
 
 ---
 
 ## License
 
-_Add your chosen license here (e.g. MIT, Apache 2.0)._
+_Add your chosen license here (e.g., MIT, Apache 2.0)._
 
-If you haven’t selected one yet, you can generate a license file on GitHub by clicking **“Add file → Create new file → LICENSE”** and choosing an open‑source license template.
+You can generate a license on GitHub via  
+“Add file → Create new file → LICENSE” and pick a template.
