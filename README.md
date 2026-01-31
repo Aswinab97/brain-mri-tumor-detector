@@ -326,6 +326,34 @@ Then open the notebook from the browser UI.
 
 ---
 
+## Model performance
+
+The app uses a fine‑tuned ResNet‑18 model trained on labeled brain MRI slices (binary classification: tumor vs. no tumor).
+
+On a held‑out test set of 38 images, the current model achieves:
+
+- **Test accuracy:** **76.3%**
+- **Tumor (positive) class:**
+  - Precision: **73.3%**
+  - Recall (sensitivity): **95.7%**
+  - F1 score: **83.0%**
+- **No tumor (negative) class:**
+  - Precision: **87.5%**
+  - Recall: **46.7%**
+  - F1 score: **60.9%**
+
+These results come from the following test confusion matrix:
+
+- True negatives: 7  
+- False positives: 8  
+- False negatives: 1  
+- True positives: 22  
+
+In other words, the model is tuned to be **sensitive to tumor cases** (it rarely misses a tumor) but can produce **false positives** (flagging some healthy scans as tumor).
+
+> These metrics are specific to the dataset and test split used in this project.  
+> This demo is for educational purposes only and must **not** be used for clinical decision‑making.
+
 ## Future Improvements
 
 - Hyperparameter tuning for improved accuracy.  
