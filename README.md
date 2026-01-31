@@ -354,6 +354,8 @@ In other words, the model is tuned to be **sensitive to tumor cases** (it rarely
 > These metrics are specific to the dataset and test split used in this project.  
 > This demo is for educational purposes only and must **not** be used for clinical decision‑making.
 
+---
+
 ## Future Improvements
 
 - Hyperparameter tuning for improved accuracy.  
