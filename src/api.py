@@ -25,16 +25,6 @@ for model_name, model_file in MODEL_FILES.items():
     if model_path.exists():
         model_paths[model_name] = str(model_path)
 
-# Determine prediction type for better clarity
-def get_prediction_type(model_count: int, use_ensemble: bool) -> str:
-    """Determine prediction type based on loaded models."""
-    if model_count == 0:
-        return "dummy"
-    elif model_count == 1 or not use_ensemble:
-        return "single"
-    else:
-        return "ensemble"
-
 # Initialize classifier with available models
 use_ensemble = len(model_paths) > 1
 classifier = BrainTumorClassifier(
@@ -46,10 +36,21 @@ classifier = BrainTumorClassifier(
 @app.get("/models")
 def get_models():
     """Get information about loaded models."""
+    # Create a dummy image to check prediction type from classifier
+    # We can't call predict without an image, so we determine type based on models
+    num_models = len(classifier.models)
+    
+    if num_models == 0:
+        prediction_type = "dummy"
+    elif num_models == 1 or not classifier.use_ensemble:
+        prediction_type = "single"
+    else:
+        prediction_type = "ensemble"
+    
     return {
-        "loaded_models": list(classifier.models.keys()) if classifier.models else [],
+        "loaded_models": list(classifier.models.keys()),
         "ensemble_mode": classifier.use_ensemble,
-        "prediction_type": get_prediction_type(len(classifier.models), classifier.use_ensemble)
+        "prediction_type": prediction_type
     }
 
 

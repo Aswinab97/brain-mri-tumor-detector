@@ -213,8 +213,8 @@ class BrainTumorClassifier:
         """
         self._validate_image(image)
 
-        # If models are loaded, use them for prediction
-        if self.models and self.use_ensemble:
+        # If models are loaded and we have multiple models, use ensemble
+        if self.models and self.use_ensemble and len(self.models) > 1:
             label, probability, model_preds = self._ensemble_predict(image)
             return {
                 "label": label,
@@ -224,7 +224,7 @@ class BrainTumorClassifier:
                 "prediction_type": "ensemble"
             }
         elif self.models:
-            # Use first available model
+            # Use first available model for single model prediction
             model_name = list(self.models.keys())[0]
             model = self.models[model_name]
             label, probability = self._predict_single_model(image, model)

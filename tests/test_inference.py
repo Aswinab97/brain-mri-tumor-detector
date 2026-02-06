@@ -70,7 +70,7 @@ def test_image_validation_aspect_ratio():
 def test_image_validation_colorful():
     """Test that colorful images are rejected."""
     classifier = BrainTumorClassifier()
-    # Create a very colorful image
+    # Create a very colorful image (outside MRI grayscale range)
     img_array = np.random.randint(0, 255, (220, 220, 3), dtype=np.uint8)
     colorful_img = Image.fromarray(img_array)
     
