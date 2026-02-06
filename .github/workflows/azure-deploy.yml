@@ -22,10 +22,8 @@ jobs:
     
     - name: Build and push Docker image
       run: |
-        docker build -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest \
-                     -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:${{ github.sha }} .
+        docker build -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest .
         docker push brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest
-        docker push brainmriregaswin.azurecr.io/brain-mri-tumor-detector:${{ github.sha }}
     
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
