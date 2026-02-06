@@ -421,8 +421,8 @@ In other words, the model is tuned to be **sensitive to tumor cases** (it rarely
 
 ## Future Improvements
 
-- ~~Hyperparameter tuning for improved accuracy~~ ✅ **Implemented: Multiple models with ensemble prediction**  
-- ~~Support for multiple models~~ ✅ **Implemented: 5 pretrained models available**
+- **Implemented: Multiple models with ensemble prediction**  
+- *Implemented: 5 pretrained models available**
 - Grad‑CAM or attention maps for tumor region visualization.  
 - Support for multiple tumor types or segmentation.  
 - Unit tests and CI (GitHub Actions).  
