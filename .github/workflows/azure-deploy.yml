@@ -3,13 +3,15 @@ name: Deploy to Azure
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
     
     - name: Login to Azure Container Registry
       uses: docker/login-action@v2
@@ -20,8 +22,10 @@ jobs:
     
     - name: Build and push Docker image
       run: |
-        docker build -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest .
+        docker build -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest \
+                     -t brainmriregaswin.azurecr.io/brain-mri-tumor-detector:${{ github.sha }} .
         docker push brainmriregaswin.azurecr.io/brain-mri-tumor-detector:latest
+        docker push brainmriregaswin.azurecr.io/brain-mri-tumor-detector:${{ github.sha }}
     
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
