@@ -30,8 +30,15 @@ def test_predict_includes_model_info():
     from PIL import Image
     import numpy as np
     
+    from src.model_utils import MRI_GRAYSCALE_MIN, MRI_GRAYSCALE_MAX
+    
     # Create MRI-like image
-    img_array = np.random.randint(80, 120, (220, 220), dtype=np.uint8)
+    img_array = np.random.randint(
+        MRI_GRAYSCALE_MIN, 
+        MRI_GRAYSCALE_MAX, 
+        (220, 220), 
+        dtype=np.uint8
+    )
     img = Image.fromarray(img_array, mode='L').convert('RGB')
     
     # Save to bytes

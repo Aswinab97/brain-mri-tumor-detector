@@ -9,11 +9,21 @@ import pytest
 from PIL import Image
 
 from src.inference import BrainTumorClassifier, InvalidImageError, NotBrainMRIError
+from src.model_utils import MRI_GRAYSCALE_MIN, MRI_GRAYSCALE_MAX
 
 
 def create_valid_mri_image(size=(220, 220)):
-    """Create a synthetic grayscale image that resembles an MRI scan."""
-    img_array = np.random.randint(80, 120, size, dtype=np.uint8)
+    """
+    Create a synthetic grayscale image that resembles an MRI scan.
+    
+    Uses mid-range grayscale values typical of brain MRI images.
+    """
+    img_array = np.random.randint(
+        MRI_GRAYSCALE_MIN, 
+        MRI_GRAYSCALE_MAX, 
+        size, 
+        dtype=np.uint8
+    )
     return Image.fromarray(img_array, mode='L').convert('RGB')
 
 

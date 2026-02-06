@@ -15,29 +15,17 @@ from typing import Dict, List
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
+
+from .model_utils import (
+    get_model_architecture_without_weights,
+    MODEL_FILES
+)
 
 
 def get_model_architecture(model_name: str) -> nn.Module:
-    """Get model architecture by name."""
-    if model_name == "resnet18":
-        model = models.resnet18(weights=None)
-        model.fc = nn.Linear(model.fc.in_features, 1)
-    elif model_name == "vgg16":
-        model = models.vgg16(weights=None)
-        model.classifier[6] = nn.Linear(model.classifier[6].in_features, 1)
-    elif model_name == "densenet121":
-        model = models.densenet121(weights=None)
-        model.classifier = nn.Linear(model.classifier.in_features, 1)
-    elif model_name == "efficientnet_b0":
-        model = models.efficientnet_b0(weights=None)
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
-    elif model_name == "mobilenet_v2":
-        model = models.mobilenet_v2(weights=None)
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
-    else:
-        raise ValueError(f"Unknown model: {model_name}")
-    return model
+    """Get model architecture by name (uses shared utility)."""
+    return get_model_architecture_without_weights(model_name, num_classes=1)
 
 
 def evaluate_model(
@@ -99,17 +87,10 @@ def compare_models(test_loader: DataLoader, device: torch.device) -> Dict:
     reports_dir = Path("reports")
     reports_dir.mkdir(exist_ok=True)
 
-    model_files = {
-        "resnet18": "resnet18_brain_mri.pth",
-        "vgg16": "vgg16_brain_mri.pth",
-        "densenet121": "densenet121_brain_mri.pth",
-        "efficientnet_b0": "efficientnet_b0_brain_mri.pth",
-        "mobilenet_v2": "mobilenet_v2_brain_mri.pth"
-    }
-
     results = {}
 
-    for model_name, model_file in model_files.items():
+    # Use shared MODEL_FILES constant
+    for model_name, model_file in MODEL_FILES.items():
         model_path = models_dir / model_file
         if not model_path.exists():
             print(f"Model not found: {model_path}")

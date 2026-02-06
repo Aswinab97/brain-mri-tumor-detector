@@ -11,6 +11,7 @@ from .inference import (
     InvalidImageError,
     NotBrainMRIError,
 )
+from .model_utils import MODEL_FILES
 
 app = FastAPI(title="Brain MRI Tumor Detection API", version="0.2.0")
 
@@ -18,23 +19,23 @@ app = FastAPI(title="Brain MRI Tumor Detection API", version="0.2.0")
 models_dir = Path("models")
 model_paths = {}
 
-# Define available models to check for
-model_files = {
-    "resnet18": "resnet18_brain_mri.pth",
-    "vgg16": "vgg16_brain_mri.pth",
-    "densenet121": "densenet121_brain_mri.pth",
-    "efficientnet_b0": "efficientnet_b0_brain_mri.pth",
-    "mobilenet_v2": "mobilenet_v2_brain_mri.pth"
-}
-
-# Check which models exist
-for model_name, model_file in model_files.items():
+# Check which models exist using shared MODEL_FILES constant
+for model_name, model_file in MODEL_FILES.items():
     model_path = models_dir / model_file
     if model_path.exists():
         model_paths[model_name] = str(model_path)
 
+# Determine prediction type for better clarity
+def get_prediction_type(model_count: int, use_ensemble: bool) -> str:
+    """Determine prediction type based on loaded models."""
+    if model_count == 0:
+        return "dummy"
+    elif model_count == 1 or not use_ensemble:
+        return "single"
+    else:
+        return "ensemble"
+
 # Initialize classifier with available models
-# If no models exist, it will use dummy prediction
 use_ensemble = len(model_paths) > 1
 classifier = BrainTumorClassifier(
     model_paths=model_paths,
@@ -48,8 +49,7 @@ def get_models():
     return {
         "loaded_models": list(classifier.models.keys()) if classifier.models else [],
         "ensemble_mode": classifier.use_ensemble,
-        "prediction_type": "ensemble" if classifier.use_ensemble and classifier.models else 
-                          "single" if classifier.models else "dummy"
+        "prediction_type": get_prediction_type(len(classifier.models), classifier.use_ensemble)
     }
 
 

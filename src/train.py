@@ -18,7 +18,18 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
+
+from .model_utils import (
+    get_model_architecture,
+    IMAGE_SIZE,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    DEFAULT_LEARNING_RATE,
+    DEFAULT_NUM_EPOCHS,
+    DEFAULT_BATCH_SIZE,
+    MODEL_FILES
+)
 
 
 class BrainMRIDataset(Dataset):
@@ -37,18 +48,18 @@ class BrainMRIDataset(Dataset):
 def get_data_transforms():
     """Get data transforms for training and validation."""
     train_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(10),
         transforms.ColorJitter(brightness=0.2, contrast=0.2),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)
     ])
 
     val_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
         transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)
     ])
 
     return train_transform, val_transform
@@ -56,34 +67,16 @@ def get_data_transforms():
 
 def get_model(model_name: str, num_classes: int = 1) -> nn.Module:
     """
-    Get a pretrained model by name.
+    Get a pretrained model by name (uses shared utility).
 
     Args:
-        model_name: Name of the model (resnet18, vgg16, densenet121, efficientnet_b0, mobilenet_v2)
-        num_classes: Number of output classes (1 for binary classification with BCEWithLogitsLoss)
+        model_name: Name of the model
+        num_classes: Number of output classes
 
     Returns:
         PyTorch model
     """
-    if model_name == "resnet18":
-        model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-        model.fc = nn.Linear(model.fc.in_features, num_classes)
-    elif model_name == "vgg16":
-        model = models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1)
-        model.classifier[6] = nn.Linear(model.classifier[6].in_features, num_classes)
-    elif model_name == "densenet121":
-        model = models.densenet121(weights=models.DenseNet121_Weights.IMAGENET1K_V1)
-        model.classifier = nn.Linear(model.classifier.in_features, num_classes)
-    elif model_name == "efficientnet_b0":
-        model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1)
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
-    elif model_name == "mobilenet_v2":
-        model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.IMAGENET1K_V1)
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
-    else:
-        raise ValueError(f"Unknown model: {model_name}")
-
-    return model
+    return get_model_architecture(model_name, num_classes)
 
 
 def train_epoch(
@@ -153,8 +146,8 @@ def train_model(
     model_name: str,
     train_loader: DataLoader,
     val_loader: DataLoader,
-    num_epochs: int = 10,
-    learning_rate: float = 1e-4,
+    num_epochs: int = DEFAULT_NUM_EPOCHS,
+    learning_rate: float = DEFAULT_LEARNING_RATE,
     device: torch.device = None
 ) -> Tuple[nn.Module, Dict]:
     """
@@ -298,13 +291,10 @@ def main():
     print("\nNote: This script assumes data is in data_raw/yes and data_raw/no")
     print("For proper training, ensure your data is split into train/val/test sets.")
 
-    # Models to train
+    # Models to train (using shared MODEL_FILES keys)
     models_to_train = [
-        ("resnet18", 1e-4),
-        ("vgg16", 1e-4),
-        ("densenet121", 1e-4),
-        ("efficientnet_b0", 1e-4),
-        ("mobilenet_v2", 1e-4)
+        (model_name, DEFAULT_LEARNING_RATE) 
+        for model_name in MODEL_FILES.keys()
     ]
 
     # Train each model

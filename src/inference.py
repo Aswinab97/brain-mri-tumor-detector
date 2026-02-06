@@ -5,7 +5,16 @@ from typing import Dict, List, Optional, Tuple
 import torch
 import torch.nn as nn
 from PIL import Image
-from torchvision import models, transforms
+from torchvision import transforms
+
+from .model_utils import (
+    get_model_architecture_without_weights,
+    IMAGE_SIZE,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    MRI_GRAYSCALE_MIN,
+    MRI_GRAYSCALE_MAX
+)
 
 
 class InvalidImageError(Exception):
@@ -48,9 +57,9 @@ class BrainTumorClassifier:
         
         # Image preprocessing transform
         self.transform = transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
             transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)
         ])
         
         # Load models if paths are provided
@@ -58,25 +67,8 @@ class BrainTumorClassifier:
             self._load_models()
     
     def _get_model_architecture(self, model_name: str) -> nn.Module:
-        """Get model architecture by name."""
-        if model_name == "resnet18":
-            model = models.resnet18(weights=None)
-            model.fc = nn.Linear(model.fc.in_features, 1)
-        elif model_name == "vgg16":
-            model = models.vgg16(weights=None)
-            model.classifier[6] = nn.Linear(model.classifier[6].in_features, 1)
-        elif model_name == "densenet121":
-            model = models.densenet121(weights=None)
-            model.classifier = nn.Linear(model.classifier.in_features, 1)
-        elif model_name == "efficientnet_b0":
-            model = models.efficientnet_b0(weights=None)
-            model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
-        elif model_name == "mobilenet_v2":
-            model = models.mobilenet_v2(weights=None)
-            model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
-        else:
-            raise ValueError(f"Unknown model architecture: {model_name}")
-        return model
+        """Get model architecture by name (uses shared utility)."""
+        return get_model_architecture_without_weights(model_name, num_classes=1)
     
     def _load_models(self) -> None:
         """Load all available models."""
