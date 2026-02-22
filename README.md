@@ -32,6 +32,38 @@ Screenshot of the web interface used to upload MRI images and view predictions:
 
 ---
 
+## System Architecture
+
+The diagram below shows the end-to-end MLOps pipeline — from training data through to cloud deployment and live inference.
+
+```mermaid
+flowchart TD
+    A["🗃️ MRI Dataset\n(Kaggle / Local)\nyes/ & no/ classes"] --> B["⚙️ Preprocessing\nResize 224×224\nNormalize ImageNet stats\nAugmentation"]
+    B --> C["🧠 Model Training\nResNet18 · VGG16\nDenseNet121 · EfficientNetB0\nMobileNetV2\n(PyTorch)"]
+    C --> D["📊 Evaluation\nAccuracy · AUC · F1\nSensitivity · Confusion Matrix\nreports/*.json"]
+    D --> E["🔗 Ensemble Layer\nAverage Softmax\nOutputs Across\n5 Models"]
+    E --> F["🚀 FastAPI\nInference API\nsrc/api.py + src/inference.py"]
+    F --> G["🐳 Docker Container\nDockerfile\nUvicorn / Gunicorn"]
+    G --> H["☁️ Azure Container\nRegistry (ACR)\nImage Push via CLI"]
+    H --> I["🌐 Azure App Service\n(Linux)\nLive Endpoint"]
+    I --> J["👤 User\nUploads MRI via Web UI\nReceives Tumor / No Tumor"]
+
+    style A fill:#1e3a5f,color:#fff,stroke:#0a66c2
+    style B fill:#1e3a5f,color:#fff,stroke:#0a66c2
+    style C fill:#0a3d2b,color:#fff,stroke:#28a745
+    style D fill:#0a3d2b,color:#fff,stroke:#28a745
+    style E fill:#0a3d2b,color:#fff,stroke:#28a745
+    style F fill:#3b1f5e,color:#fff,stroke:#6f42c1
+    style G fill:#1a3a4a,color:#fff,stroke:#17a2b8
+    style H fill:#1a2e4a,color:#fff,stroke:#0078d4
+    style I fill:#1a2e4a,color:#fff,stroke:#0078d4
+    style J fill:#4a2a1a,color:#fff,stroke:#fd7e14
+```
+
+> **Pipeline summary:** Training data → Preprocessing → 5 model architectures → Ensemble averaging → FastAPI inference API → Dockerized container → Azure Container Registry → Azure App Service (live endpoint) → User prediction result.
+
+---
+
 ## Project Overview
 
 This is an end-to-end computer vision project that includes:
